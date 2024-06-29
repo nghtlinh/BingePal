@@ -8,10 +8,7 @@ from config import config
 
 # Connect to Mongo DB Client
 db_name = config["MONGO_DB"]
-client = pymongo.MongoClient(f'mongodb+srv://{config["MONGO_USERNAME"]}:
-                             {config["MONGO_PASSWORD"]}@cluster0.
-                             {config["MONGO_CLUSTER_ID"]}.mongodb.net/{db_name}?
-                             retryWrites=true&w=majority')
+client = pymongo.MongoClient(f'mongodb+srv://{config["MONGO_USERNAME"]}:{config["MONGO_PASSWORD"]}@cluster0.{config["MONGO_CLUSTER_ID"]}.mongodb.net/{db_name}?retryWrites=true&w=majority')
 
 # Access + query collections 
 db = client[db_name]
