@@ -11,7 +11,7 @@ from get_ratings import get_user_ratings
 # Retrieve page counts of film ratings based on username
 def get_page_count(username):
     url = "https://letterboxd.com/{}/films/by/date"
-    r = request.get(url.format(username))
+    r = requests.get(url.format(username))
     
     soup = BeautifulSoup(r.text, "lxml")
     
@@ -32,9 +32,7 @@ def get_user_data(username):
     future = asyncio.ensure_future(get_user_ratings(username, db_cursor=None, mongo_db=None, store_in_db=None, num_pages=num_pages, return_unrated=True))
     loop.run_until_complete(future)
     
-    objects = future.result()
-    print(objects)
-    return objects
+    return future.result()
 
 if __name__ == "__main__":
     username = "monicanguyenh"

@@ -1,12 +1,7 @@
 from collections import defaultdict
-
-from surprise import Dataset
-from surprise import SVD
-from surprise import Reader
-from surprise.model_selection import GridSearchCV
-from surprise.dump import load
 import pickle
 
+# Assuming the rest of your imports and functions are correctly defined
 
 def get_top_n(predictions, n=20):
     """
@@ -22,34 +17,35 @@ def get_top_n(predictions, n=20):
     """
     
     # Map the predictions to each user
-    # A prediction contains: user id, item id, true rating, estimate rating, details
     top_n = defaultdict(list)
     for user_id, item_id, true_rating, est_rating, _ in predictions:
         top_n[user_id].append((item_id, est_rating))
         
-        # Sort the predictions for each user and retrieve the k highest ones
-        for user_id, user_ratings in top_n.items():
-            user_ratings,sort(key=lambda x: x[1], reverse=True)
-            top_n[user_id] = user_ratings[:n]
-            
-        return top_n
+    # Sort the predictions for each user and retrieve the k highest ones
+    for user_id, user_ratings in top_n.items():
+        user_ratings.sort(key=lambda x: x[1], reverse=True)
+        top_n[user_id] = user_ratings[:n]
+        
+    return top_n
+
+# Load user watched list and threshold movie list
+with open("data_process/models/user_watched.txt", "rb") as fp:
+    user_watched_list = pickle.load(fp)
+
+with open("models/threshold_movie_list.txt", "rb") as fp:
+    threshold_movie_list = pickle.load(fp)   
     
-# Load the algorithm and making prediction
+# Load the algorithm and make predictions
 algo = load("models/mini_model.pkl")[1]
-prediction = algo.predict('monicanguyenh', "get-out-2017")
-print(prediction.est_rating)
-
-# Load the data from the pickle file
-data = pickle.load(open("models/mini_model_data.pkl", "rb"))
-
-# Build the full training set from the loaded data
-trainset = data.build_full_trainset()
-
-# Generate the test set containing all user-item pairs not in the training set
-testset = trainset.build_anti_testset()
 
 # Assuming `user_set` is a list of tuples like [(username, ...), ...]
 username = "monicanguyenh"
-user_set = [x for x in testset if x[0] == username]  # Filter user_set based on username
+unwatched_movies = [x for x in threshold_movie_list if x not in user_watched_list]
+prediction_set = [(username, x, 0) for x in unwatched_movies]
 
-print(testset)      
+predictions = algo.test(prediction_set)
+top_n = get_top_n(predictions, n=20)  
+
+for uid, user_ratings in top_n.items(): 
+    if uid == "monicanguyenh": 
+        print(uid, [(iid, _) for (iid, _) in user_ratings])
