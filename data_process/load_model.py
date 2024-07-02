@@ -36,7 +36,7 @@ def get_top_n(predictions, n=20):
     
 # Load the algorithm and making prediction
 algo = load("models/mini_model.pkl")[1]
-prediction = algo.predict('5fc52b1c22862e5421d36cea', "get-out-2017")
+prediction = algo.predict('monicanguyenh', "get-out-2017")
 print(prediction.est_rating)
 
 # Load the data from the pickle file
@@ -49,7 +49,7 @@ trainset = data.build_full_trainset()
 testset = trainset.build_anti_testset()
 
 # Assuming `user_set` is a list of tuples like [(username, ...), ...]
-username = "samlearner"
-user_set = [x for x in user_set if x[0] == username]  # Filter user_set based on username
+username = "monicanguyenh"
+user_set = [x for x in testset if x[0] == username]  # Filter user_set based on username
 
-print(user_set)      
+print(testset)      
