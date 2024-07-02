@@ -1,14 +1,14 @@
 import pandas as pd
 from surprise import Dataset
 from surprise import Reader
-from surprise import KNNWithMeans
+# from surprise import KNNWithMeans
 from surprise import SVD
 from surprise.model_selection import GridSearchCV
 from surprise.model_selection import cross_validate
 from surprise.dump import dump
 import pickle
 
-#load data
+#load ratings data
 df = pd.read_csv('data/sample_rating.csv')
 
 reader = Reader(rating_scale=(1,10))

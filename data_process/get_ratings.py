@@ -16,12 +16,26 @@ from db_config import config
 
 import time
 
+"""
+    This class is responsible for handling user ratings.
 
+    If the database option is enabled:
+        - Store ratings correctly in the database.
+    
+    If the database option is disabled:
+        - Return an array of ratings.
+    
+    In case the user does not exist:
+        - Return an error.
+"""
+
+# Fetch page's content
 async def fetch(url, session, input_data={}):
     async with session.get(url) as response:
         return await response.read(), input_data
             
 
+# Fetch page counts + Update MongoDB documents     
 async def get_page_counts(usernames, users_cursor):
     url = "https://letterboxd.com/{}/films/"
     tasks = []
@@ -31,8 +45,10 @@ async def get_page_counts(usernames, users_cursor):
             task = asyncio.ensure_future(fetch(url.format(username), session, {"username": username}))
             tasks.append(task)
         
+        # Gather the results
         responses = await asyncio.gather(*tasks)
-
+        
+        # Process each response
         for response in responses:
             soup = BeautifulSoup(response[0], "lxml")
             try:
@@ -41,7 +57,8 @@ async def get_page_counts(usernames, users_cursor):
             except IndexError:
                 num_pages = 1
 
-            users_cursor.update_one({"username": response[1]['username']}, {"$set": {"num_ratings_pages": num_pages}})
+            users_cursor.update_one({"username": response[1]['username']}, 
+                                    {"$set": {"num_ratings_pages": num_pages}})
 
 
 async def generate_ratings_operations(response, send_to_db=True, return_unrated=False):
@@ -90,7 +107,6 @@ async def generate_ratings_operations(response, send_to_db=True, return_unrated=
     
 
 async def get_user_ratings(username, db_cursor=None, mongo_db=None, store_in_db=True, num_pages=None, return_unrated=False):
-    # url = "https://letterboxd.com/{}/films/ratings/page/{}/"
     url = "https://letterboxd.com/{}/films/by/date/page/{}/"
     
     if not num_pages:
@@ -98,11 +114,8 @@ async def get_user_ratings(username, db_cursor=None, mongo_db=None, store_in_db=
         user = db_cursor.find_one({"username": username})
         num_pages = user["num_ratings_pages"]
 
-    # Fetch all responses within one Client session,
-    # keep connection alive for all requests.
+    # Fetch all responses within one Client session, keep connection alive for all requests.
     async with ClientSession() as session:
-        # print("Starting Scrape", time.time() - start)
-
         tasks = []
         # Make a request for each ratings page and add to task queue
         for i in range(num_pages):
@@ -111,8 +124,6 @@ async def get_user_ratings(username, db_cursor=None, mongo_db=None, store_in_db=
 
         # Gather all ratings page responses
         scrape_responses = await asyncio.gather(*tasks)
-
-        # print("Finishing Scrape", time.time() - start)
         
     # Process each ratings page response, converting it into bulk upsert operations or output dicts
     tasks = []
@@ -130,8 +141,6 @@ async def get_user_ratings(username, db_cursor=None, mongo_db=None, store_in_db=
     if not store_in_db:
         return upsert_operations
 
-    # print("Starting Upsert", time.time() - start)
-
     # Execute bulk upsert operations
     try:
         if len(upsert_operations) > 0:
@@ -141,12 +150,9 @@ async def get_user_ratings(username, db_cursor=None, mongo_db=None, store_in_db=
     except BulkWriteError as bwe:
         pprint(bwe.details)
 
-    # print("Finishing Upsert", time.time() - start)
-
 
 async def get_ratings(usernames, db_cursor=None, mongo_db=None, store_in_db=True):
     start = time.time()
-    # print("Function Start")
 
     # Loop through each user
     for i, username in enumerate(usernames):
@@ -157,7 +163,6 @@ async def get_ratings(usernames, db_cursor=None, mongo_db=None, store_in_db=True
 def main():
     # Connect to MongoDB Client
     db_name = config["MONGO_DB"]
-    # client = motor.motor_asyncio.AsyncIOMotorClient(f'mongodb+srv://{config["MONGO_USERNAME"]}:{config["MONGO_PASSWORD"]}@cluster0.{config["MONGO_CLUSTER_ID"]}.mongodb.net/?retryWrites=true&w=majority')
     client = pymongo.MongoClient(f'mongodb+srv://{config["MONGO_USERNAME"]}:{config["MONGO_PASSWORD"]}@cluster0.{config["MONGO_CLUSTER_ID"]}.mongodb.net/{db_name}?retryWrites=true&w=majority')
 
     # Find letterboxd database and user collection
@@ -169,13 +174,11 @@ def main():
     loop = asyncio.get_event_loop()
 
     # Find number of ratings pages for each user and add to their Mongo document (note: max of 128 scrapable pages)
-    # future = asyncio.ensure_future(get_page_counts(all_usernames, users))
     future = asyncio.ensure_future(get_page_counts([], users))
     loop.run_until_complete(future)
 
     # Find and store ratings for each user
     future = asyncio.ensure_future(get_ratings(all_usernames, users, db))
-    # future = asyncio.ensure_future(get_ratings(["samlearner", "colonelmortimer"], users, db))
     loop.run_until_complete(future)
 
 
