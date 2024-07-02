@@ -4,10 +4,10 @@ from numpy import asarray
 from numpy import savetxt
 
 import pymongo
-from config import config 
+from db_config import config 
 
 # Connect to Mongo DB Client
-db_name = config["MONGO_DB"]
+db_name = "letterboxd"
 client = pymongo.MongoClient(f'mongodb+srv://{config["MONGO_USERNAME"]}:{config["MONGO_PASSWORD"]}@cluster0.{config["MONGO_CLUSTER_ID"]}.mongodb.net/{db_name}?retryWrites=true&w=majority')
 
 # Access + query collections 

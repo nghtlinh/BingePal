@@ -1,13 +1,15 @@
 import requests 
 from bs4 import BeautifulSoup
 import pymongo
-from config import config
+from db_config import config
+import certifi
 
 # Extract user information and store data in a MongoDB database
 
-db_name = config["MONGO_DB"]
+db_name = "letterboxd"
 
-client = pymongo.MongoClient(f'mongodb+srv://{config["MONGO_USERNAME"]}:{config["MONGO_PASSWORD"]}@cluster0.{config["MONGO_CLUSTER_ID"]}.mongodb.net/{db_name}?retryWrites=true&w=majority')
+client = pymongo.MongoClient(f'mongodb+srv://{config["MONGO_USERNAME"]}:{config["MONGO_PASSWORD"]}@cluster0.{config["MONGO_CLUSTER_ID"]}.mongodb.net/{db_name}?retryWrites=true&w=majority',
+                             tlsCAFile=certifi.where())
 
 db = client[db_name]
 users = db.users
@@ -15,7 +17,7 @@ users = db.users
 base_url = "https://letterboxd.com/members/popular/page/{}"
 datafile = open('data/users.txt', 'w')
 
-for page in range (1, 1501):
+for page in range(1, 251):
     print("Page {}".format(page))
     
     r = requests.get(base_url.format(page))
@@ -35,8 +37,9 @@ for page in range (1, 1501):
             "num_reviews": num_reviews
         }
         
+        #This is for local txt file in data/users.txt
         datafile.write(username + '\n')
+        #this is for mongodb
         users.update_one({"username": user["username"]}, {"$set":user}, upsert=True)
         
 datafile.close()
-        
