@@ -1,5 +1,6 @@
 from collections import defaultdict
 import pickle
+from surprise.dump import load
 
 # Assuming the rest of your imports and functions are correctly defined
 
@@ -29,9 +30,9 @@ def get_top_n(predictions, n=20):
     return top_n
 
 # Load user watched list and threshold movie list
-with open("data_process/models/user_watched.txt", "rb") as fp:
+with open("models/user_watched.txt", "rb") as fp:
     user_watched_list = pickle.load(fp)
-
+    
 with open("models/threshold_movie_list.txt", "rb") as fp:
     threshold_movie_list = pickle.load(fp)   
     
