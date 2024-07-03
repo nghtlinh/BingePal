@@ -14,15 +14,16 @@ from get_user_ratings import get_user_data
 df = pd.read_csv('data/sample_rating.csv')
 
 # Get additional user ratings, Filter out movies that have been rated, and Added it into database
-username = "monicanguyenh"
+username = "panukadu"
 user_movies = get_user_data(username)
 user_rated = [x for x in user_movies if x['rating_val'] > 0]
 
 # Prepare data for training a recommendation model
 user_df = pd.DataFrame(user_rated)
 df = pd.concat([df, user_df]).reset_index(drop=True)
+df.drop_duplicates(inplace=True)
 
-
+# Load surprise dataset
 reader = Reader(rating_scale=(1,10))
 data = Dataset.load_from_df(df[["user_id", "movie_id", "rating_val"]], reader)
 
