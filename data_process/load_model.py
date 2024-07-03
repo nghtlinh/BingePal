@@ -47,6 +47,7 @@ prediction_set = [(username, x, 0) for x in unwatched_movies]
 predictions = algo.test(prediction_set)
 top_n = get_top_n(predictions, n=20)  
 
+
 for uid, user_ratings in top_n.items(): 
     if uid == "monicanguyenh": 
         print(uid, [(iid, _) for (iid, _) in user_ratings])
