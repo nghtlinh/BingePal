@@ -11,7 +11,7 @@ import pickle
 from get_user_ratings import get_user_data
 
 # Load existing ratings data
-df = pd.read_csv('data_process/data/sample_rating.csv')
+df = pd.read_csv('data/sample_rating.csv')
 
 # Get additional user ratings, Filter out movies that have been rated, and Added it into database
 username = "monicanguyenh"
@@ -32,5 +32,5 @@ train_set = data.build_full_trainset()
 svd_algo.fit(train_set)
 
 # Save model and data
-dump("data_process/models/mini_model.pkl", predictions=None, algo=svd_algo, verbose=1)
-pickle.dump(data, open("data_process/models/mini_model_data.pkl", "wb"))
+dump("models/mini_model.pkl", predictions=None, algo=svd_algo, verbose=1)
+pickle.dump(data, open("models/mini_model_data.pkl", "wb"))

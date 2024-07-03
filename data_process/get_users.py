@@ -15,7 +15,7 @@ db = client[db_name]
 users = db.users
 
 base_url = "https://letterboxd.com/members/popular/page/{}"
-datafile = open('data_process/data/users.txt', 'w')
+datafile = open('data/users.txt', 'w')
 
 for page in range(1, 261):
     print("Page {}".format(page))
