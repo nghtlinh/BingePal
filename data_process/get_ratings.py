@@ -177,8 +177,8 @@ def main():
     future = asyncio.ensure_future(get_page_counts([], users))
     loop.run_until_complete(future)
 
-    # Find and store ratings for each user
-    future = asyncio.ensure_future(get_ratings(all_usernames, users, db))
+    # Find and store ratings for each user, skip the first 2000 usernames
+    future = asyncio.ensure_future(get_ratings(all_usernames[2000:], users, db))
     loop.run_until_complete(future)
 
 
