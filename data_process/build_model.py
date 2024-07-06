@@ -1,7 +1,6 @@
 import pandas as pd
 from surprise import Dataset
 from surprise import Reader
-# from surprise import KNNWithMeans
 from surprise import SVD
 from surprise.model_selection import GridSearchCV
 from surprise.model_selection import cross_validate
@@ -10,28 +9,33 @@ import pickle
 
 from get_user_ratings import get_user_data
 
-# Load existing ratings data
-df = pd.read_csv('data/sample_rating.csv')
+def build_model(username):
+    df = pd.read_csv('data/training_data.csv')
+    
+    user_movies = get_user_data(username)
+    user_rated = [x for x in user_movies if x['rating_val'] > 0]
+    
+    # Prepare data for training a recommendation model
+    user_df = pd.DataFrame(user_rated)
+    df = pd.concat([df, user_df]).reset_index(drop=True)
+    df.drop_duplicates(inplace=True)
 
-# Get additional user ratings, Filter out movies that have been rated, and Added it into database
-username = "panukadu"
-user_movies = get_user_data(username)
-user_rated = [x for x in user_movies if x['rating_val'] > 0]
+    # Load surprise dataset
+    reader = Reader(rating_scale=(1,10))
+    data = Dataset.load_from_df(df[["user_id", "movie_id", "rating_val"]], reader)
 
-# Prepare data for training a recommendation model
-user_df = pd.DataFrame(user_rated)
-df = pd.concat([df, user_df]).reset_index(drop=True)
-df.drop_duplicates(inplace=True)
+    # Train svd model
+    svd_algo = SVD()
+    train_set = data.build_full_trainset()
+    svd_algo.fit(train_set)
+    user_watched_list = [x['movie_id'] for x in user_movies]
+    
+    return svd_algo, user_watched_list
 
-# Load surprise dataset
-reader = Reader(rating_scale=(1,10))
-data = Dataset.load_from_df(df[["user_id", "movie_id", "rating_val"]], reader)
 
-# Train svd model
-svd_algo = SVD()
-train_set = data.build_full_trainset()
-svd_algo.fit(train_set)
-
-# Save model and data
-dump("models/mini_model.pkl", predictions=None, algo=svd_algo, verbose=1)
-pickle.dump(data, open("models/mini_model_data.pkl", "wb"))
+if __name__ == "__main__":
+    svd_algo, user_watched_list = build_model("panukadu")
+    
+    dump("models/mini_model.pkl", predictions=None, algo=svd_algo, verbose=1)
+    with open("models/user_watched.txt", "wb") as fp:
+        pickle.dump(user_watched_list, fp)
