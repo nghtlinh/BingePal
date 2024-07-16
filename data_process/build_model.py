@@ -10,6 +10,7 @@ import pickle
 from get_user_ratings import get_user_data
 
 def build_model(username):
+        
     df = pd.read_csv('data/training_data.csv')
     
     user_movies = get_user_data(username)
@@ -34,7 +35,10 @@ def build_model(username):
 
 
 if __name__ == "__main__":
-    svd_algo, user_watched_list = build_model("panukadu")
+    with open("config/user_config.txt", "r") as f:
+        username = f.read().strip()
+
+    svd_algo, user_watched_list = build_model(username)    
     
     dump("models/mini_model.pkl", predictions=None, algo=svd_algo, verbose=1)
     with open("models/user_watched.txt", "wb") as fp:

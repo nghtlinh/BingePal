@@ -6,13 +6,17 @@ from surprise import Reader
 from surprise.model_selection import GridSearchCV
 from surprise import SVD
 from surprise.dump import load
-from load_model import get_top_n
-
 import pickle
 
 import pandas as pd
 
 def run_model(username, algo, user_watched_list, threshold_movie_list, num_recommendations=20):
+    
+    def get_top_n(predictions, n=20):
+        top_n = [(iid, est) for uid, iid, true_r, est, _ in predictions]
+        top_n.sort(key=lambda x: x[1], reverse=True)
+
+        return top_n[:n] 
     
     unwatched_movies = [x for x in threshold_movie_list if x not in user_watched_list]
     prediction_set = [(username, x, 0) for x in unwatched_movies]

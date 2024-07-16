@@ -10,6 +10,7 @@ import pymongo.errors
 from db_config import config
 
 def create_training_data(target_sample_size=200000):
+    
     db_name = config["MONGO_DB"]
     client = pymongo.MongoClient(f'mongodb+srv://{config["MONGO_USERNAME"]}:{config["MONGO_PASSWORD"]}@cluster0.{config["MONGO_CLUSTER_ID"]}.mongodb.net/{db_name}?retryWrites=true&w=majority')
     

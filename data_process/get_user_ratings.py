@@ -6,8 +6,6 @@ from aiohttp import ClientSession
 
 from get_ratings import get_user_ratings
 
-# Retrieve user ratings based on username
-
 # Retrieve page counts of film ratings based on username
 def get_page_count(username):
     url = "https://letterboxd.com/{}/films/by/date"
